@@ -1,113 +1,342 @@
-import Image from "next/image";
+"use client";
+
+import { ReactNode, useRef, useState } from "react";
+import { useActions, useUIState } from "ai/rsc";
+import { generateId } from "ai";
+import { useChat } from "ai/react";
+import ReactMarkdown from "react-markdown";
+import Header from "./components/header";
+import ExpensesChart from "./components/charts/expensesChart";
+import SavingsProgressChart from "./components/charts/savingProgressChart";
+import TaxEstimationChart from "./components/charts/taxEstimationChart";
+import RetirementProjectionChart from "./components/charts/retirementProjectionChart";
+import { nanoid } from "nanoid";
+import Textarea from "react-textarea-autosize";
+import { handleUserQuery } from "../app/actions/chat";
+import EducationalContent from "./components/EducationalContent";
+
+export const maxDuration = 60;
 
 export default function Home() {
+  const [input, setInput] = useState<string>("");
+  // const [conversation, setConversation] = useUIState<typeof AI>();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [component, setComponent] = useState<ReactNode>();
+  const [caption, setCaption] = useState<string>();
+
+  const handleUserInput = async () => {
+    setLoading(true);
+
+    const messages = []; // Any previous messages in the conversation
+
+    const result = await handleUserQuery(input, messages);
+    const { resul, caption, data } = result;
+
+    switch (resul) {
+      case "expenseAnalysis":
+        setComponent(<ExpensesChart spendingData={data} />);
+        setCaption(caption);
+        break;
+      case "savingsGoal":
+        setComponent(<SavingsProgressChart savingsGoalData={data} />);
+        setCaption(caption);
+        break;
+      case "taxPlanning":
+        setComponent(<TaxEstimationChart taxData={data} />);
+        setCaption(caption);
+        break;
+      case "retirementPlanning":
+        setComponent(<RetirementProjectionChart retirementData={data} />);
+        setCaption(caption);
+        break;
+        case "financialEducation":
+        setComponent(<EducationalContent content={data} />);
+        setCaption(caption);
+        break;
+    }
+
+    console.log(resul, caption, data);
+
+    setResponse(result);
+    setLoading(false);
+  };
+
+  // const {
+  //   // messages,
+  //   // input,
+  //   // handleInputChange,
+  //   // handleSubmit,
+  //   isLoading,
+  //   error,
+  //   reload,
+  //   stop,
+  // } = useChat({
+  //   maxToolRoundtrips: 2,
+  // });
+
+  // const handleSubmit = async () => {
+  //   setInput("");
+  //   setConversation((currentConversation: any) => [
+  //     ...currentConversation,
+  //     { id: generateId(), role: "user", display: input },
+  //   ]);
+
+  //   const message = await handleUserQuery("hii",input);
+  //   setConversation((currentConversation: any) => [
+  //     ...currentConversation,
+  //     message,
+  //   ]);
+  // };
+
+
+  
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+      <Header />
+
+      <div className="space-y-4">
+        {loading && <p>Loading...</p>}
+        {component && component}
+        {caption && caption}
+
+        {/* {conversation.map((message: any) => (
+          <div key={message.id}>
+            <div className="font-bold">
+              {message.role === "user" ? "Rehman: " : "AI: "}
+              {message.display}
+              {/* <ReactMarkdown></ReactMarkdown> 
+            </div>
+          </div>
+        ))}
+
+        {/* {isLoading && (
+          <div>
+            <div className="flex space-x-2 justify-center items-center dark:invert">
+              <span className="sr-only">Loading...</span>
+              <div className="h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-8 w-8 bg-black rounded-full animate-bounce"></div>
+            </div>
+            <button
+              type="button"
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+              onClick={() => stop()}
+            >
+              stop
+            </button>
+          </div>
+        )}
+        {error && (
+          <>
+            <div>An error occurred.</div>
+            <button type="button" onClick={() => reload()}>
+              Retry
+            </button>
+          </>
+        )} */}
+      </div>
+
+      {/* <div
+        className={`
+                    cursor-pointer border bg-white p-4 
+                    hover:bg-zinc-50 dark:bg-zinc-950 dark:hover:bg-zinc-900
+                 
+                  `}
+        onClick={async () => {
+          setConversation((currentConversation: any) => [
+            ...currentConversation,
+            {
+              id: generateId(),
+              role: "user",
+              display:
+                "do expenses spending on rent amount 1000 rupees, on utility amount is 500 rupees, on food amount is 200 rupees and on travel amount is 400 rupees",
+            },
+          ]);
+
+          const message = await submitUserMessage(input, "4000");
+          setConversation((currentConversation: any) => [
+            ...currentConversation,
+            message,
+          ]);
+        }}
+      >
+        <div className="text-sm font-semibold">
+          I want to know my expenses analysis.
         </div>
-      </div>
+        <div className="text-sm text-zinc-600">expenses analysis</div>
+      </div> */}
+      <Textarea
+        ref={inputRef}
+        name="input"
+        rows={1}
+        maxRows={5}
+        tabIndex={0}
+        placeholder="Ask a question..."
+        spellCheck={false}
+        value={input}
+        className="resize-none fixed text-black bottom-0 w-full max-w-md p-2 my-8 border border-gray-300 rounded shadow-xl w-full min-h-12 rounded-fill bg-muted border border-input pl-4 pr-10 pt-3 pb-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'"
+        onChange={(e) => {
+          setInput(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          // Enter should submit the form
+          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+            // Prevent the default action to avoid adding a new line
+            if (input.trim().length === 0) {
+              e.preventDefault();
+              return;
+            }
+            e.preventDefault();
+            handleUserInput();
+          }
+        }}
+        onHeightChange={(height) => {
+          // Ensure inputRef.current is defined
+          if (!inputRef.current) return;
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+          // The initial height and left padding is 70px and 2rem
+          const initialHeight = 70;
+          // The initial border radius is 32px
+          const initialBorder = 32;
+          // The height is incremented by multiples of 20px
+          const multiple = (height - initialHeight) / 20;
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+          // Decrease the border radius by 4px for each 20px height increase
+          const newBorder = initialBorder - 4 * multiple;
+          // The lowest border radius will be 8px
+          inputRef.current.style.borderRadius = Math.max(8, newBorder) + "px";
+        }}
+      />
+      {/* <input
+        className="fixed text-black bottom-0 w-full max-w-md p-2 my-8 border border-gray-300 rounded shadow-xl"
+        value={input}
+        placeholder="Say something..."
+        onChange={handleChange}
+        onKeyDownCapture={handleKeyDown}
+      /> */}
+    </div>
   );
 }
+
+// 'use client';
+
+// import { useChat } from 'ai/react';
+// import path from 'path';
+// import { useState } from 'react';
+// import ReactMarkdown from "react-markdown";
+// import remarkGfm from "remark-gfm";
+// import MarkdownRenderer from './components/MarkdownRenderer';
+
+// // Define the props for the MarkdownRenderer component
+// interface MarkdownRendererProps {
+//   markdown: string;
+// }
+// export default function Page() {
+//   const { messages,input, handleInputChange, handleSubmit, isLoading, error, reload } = useChat(
+
+//     {
+
+//       keepLastMessageOnError: true,
+//     });
+//   // const [input, setInput] = useState<string>('');
+
+//   // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//   //   setInput(e.target.value);
+//   // };
+
+//   // const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+//   //   if (e?.key == "Enter" && input) {
+//   //     handleSubmit();
+//   //   }
+//   // };
+
+//   return (
+//     <>
+//       <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+//         <div className="space-y-4">
+//           {messages.map((message: any) => (
+//             <div key={message.id}>
+//               <div className="font-normal bg-blue-500">
+//                 {message.role === "user" ? "Rehman: " : "AI: "}
+//                 <MarkdownRenderer markdown={message.content}/>
+
+//               </div>
+
+//             </div>
+//           ))}
+
+//           {isLoading && (
+//             <div>
+//               <div className="flex space-x-2 justify-center items-center dark:invert">
+//                 <span className="sr-only">Loading...</span>
+//                 <div className="h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+//                 <div className="h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+//                 <div className="h-8 w-8 bg-black rounded-full animate-bounce"></div>
+//               </div>
+//               <button type="button" className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" onClick={() => stop()}>stop</button>
+
+//             </div>
+//           )}
+
+//           {error && (
+//             <>
+//               <div>An error occurred.</div>
+//               <button type="button" onClick={() => reload()}>
+//                 Retry
+//               </button>
+//             </>
+//           )}
+//         </div>
+//         <form onSubmit={handleSubmit}>
+//           <input name="prompt" className="fixed text-black bottom-0 w-full max-w-md p-2 my-8 border border-gray-300 rounded shadow-xl"
+//             value={input} onChange={handleInputChange} />
+//           {/* <button type="submit">Submit</button> */}
+//         </form>
+//         {/* <input
+//           className="fixed text-black bottom-0 w-full max-w-md p-2 my-8 border border-gray-300 rounded shadow-xl"
+//           value={input}
+//           placeholder="Say something..."
+//           onChange={handleChange}
+//           onKeyDownCapture={handleKeyDown}
+//         /> */}
+
+//       </div>
+
+//     </>
+//   );
+// }
+
+// export default function FinancialAdvisor() {
+//   const [response, setResponse] = useState(null);
+//   const [loading, setLoading] = useState(false);
+//   const [userMessage, setUserMessage] = useState('');
+
+//   const handleUserInput = async () => {
+//     setLoading(true);
+
+//     const messages = []; // Any previous messages in the conversation
+
+//     const result = await handleUserQuery(userMessage, messages);
+//     setResponse(result);
+//     setLoading(false);
+//   };
+
+//   return (
+
+//     <div>
+//       <textarea
+//         value={userMessage}
+//         onChange={(e) => setUserMessage(e.target.value)}
+//         placeholder="Enter your query..."
+//         className="text-black"
+//       />
+//       <button onClick={handleUserInput} disabled={loading}>
+//         Submit
+//       </button>
+//       {loading && <p>Loading...</p>}
+//       {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
+//     </div>
+//   );
+// }
